@@ -21,6 +21,8 @@ fn main() {
                 spawn_asteroids,
                 asteroid_bullet_collision,
                 despawn_entities_outside_of_screen,
+                confine_player_movement,
+                player_hit,
             )
         )
         .run();
@@ -41,6 +43,7 @@ struct SpriteMovement {
 #[derive(Component)]
 struct Bullet;
 
+//Deref? DerefMut?
 #[derive(Component, Deref, DerefMut)]
 struct CooldownTimer(Timer);
 
@@ -61,7 +64,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     //spawn Camera
     commands.spawn(Camera2dBundle::default());
     // Spawn the spaceship
-    commands.spawn((
+    commands.spawn(  (
         Player,
         SpriteBundle {
             texture: asset_server.load("spaceship.png"),
@@ -74,6 +77,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             speed: 100.0,
         },
         CooldownTimer(Timer::from_seconds(0.2, TimerMode::Once)),
+        BallCollider(24.0),
     ));
 }
 
@@ -126,6 +130,7 @@ fn ship_movement_input(
     {
         sprite_movement.direction.y = 0.0;
     }
+
 }
 
 fn bullet_firing(
@@ -153,6 +158,11 @@ fn bullet_firing(
             },
             BallCollider(2.0),
         ));
+        let sound_effect = asset_server.load("audio/laserSmall_000.ogg");
+        cmd.spawn(AudioBundle {
+            source: sound_effect,
+            settings: PlaybackSettings::DESPAWN,
+        });
         timer.reset();
     }
 }
@@ -216,6 +226,31 @@ fn asteroid_bullet_collision(
     }
 }
 
+fn player_hit(
+    mut commands: Commands,
+    mut player: Query<(Entity, &Transform, &BallCollider), With<Player>>,
+    asteroids: Query<(Entity, &Transform, &BallCollider), With<Asteroid>>,
+    asset_server: Res<AssetServer>,
+) {
+    let (player_entity, player_transform, player_collider) = player.single_mut();
+    for (asteroid_entity, asteroid_transform, asteroid_collider) in &mut asteroids.iter(){
+        if asteroid_transform
+            .translation
+            .distance(player_transform.translation)
+            < asteroid_collider.0 + player_collider.0
+        {
+            let sound_effect = asset_server.load("audio/explosionCrunch_004.ogg");
+            commands.spawn(AudioBundle {
+                source: sound_effect,
+                settings: PlaybackSettings::DESPAWN,
+            });
+            commands.entity(asteroid_entity).despawn();
+            //causes panic, trying to fix
+            commands.entity(player_entity).despawn();
+        }
+    }
+}
+
 fn despawn_entities_outside_of_screen(
     mut cmd: Commands,
     window: Query<&Window>,
@@ -230,4 +265,33 @@ fn despawn_entities_outside_of_screen(
             cmd.entity(entity).despawn();
         }
     }
+}
+
+fn confine_player_movement (
+    mut player: Query<&mut Transform, With<Player>>,
+    window: Query<&Window>,
+){
+    let mut transform = player.single_mut();
+    let mut translation = transform.translation;
+    let window = window.single();
+
+    let player_radius = 24.0;
+    let x_min = -window.width()/ 2.0 + player_radius;
+    let x_max = window.width()/2.0 - player_radius;
+    let y_min = -window.height()/2.0 + player_radius;
+    let y_max = window.height()/2.0 - player_radius;
+
+    //clamp the X position
+    if translation.x < x_min {
+        translation.x = x_min;
+    } else if translation.x > x_max{
+        translation.x = x_max;
+    }
+    //clamp the y position
+    if translation.y < y_min {
+        translation.y = y_min;
+    } else if translation . y > y_max {
+        translation.y = y_max;
+    }
+    transform.translation = translation;
 }
