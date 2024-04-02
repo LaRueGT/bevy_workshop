@@ -93,44 +93,44 @@ fn ship_movement_input(
     mut player: Query<&mut SpriteMovement, With<Player>>,
     )
 {
-    let mut sprite_movement = player.single_mut();
+    if let Ok(mut sprite_movement) = player.get_single_mut(){
 
-    if keyboard_input.just_pressed(KeyCode::KeyA) || keyboard_input.just_pressed(KeyCode::ArrowLeft) {
-        sprite_movement.direction.x = -1.0;
-    } else if (keyboard_input.just_released(KeyCode::KeyA)
-        || keyboard_input.just_released(KeyCode::ArrowLeft))
-        && sprite_movement.direction.x < 0.0
-    {
-        sprite_movement.direction.x = 0.0;
+        if keyboard_input.just_pressed(KeyCode::KeyA) || keyboard_input.just_pressed(KeyCode::ArrowLeft) {
+            sprite_movement.direction.x = -1.0;
+        } else if (keyboard_input.just_released(KeyCode::KeyA)
+            || keyboard_input.just_released(KeyCode::ArrowLeft))
+            && sprite_movement.direction.x < 0.0
+        {
+            sprite_movement.direction.x = 0.0;
+        }
+    
+        if keyboard_input.just_pressed(KeyCode::KeyD) || keyboard_input.just_pressed(KeyCode::ArrowRight) {
+            sprite_movement.direction.x = 1.0;
+        } else if (keyboard_input.just_released(KeyCode::KeyD)
+            || keyboard_input.just_released(KeyCode::ArrowRight))
+            && sprite_movement.direction.x > 0.0
+        {
+            sprite_movement.direction.x = 0.0;
+        }
+    
+        if keyboard_input.just_pressed(KeyCode::KeyW) || keyboard_input.just_pressed(KeyCode::ArrowUp) {
+            sprite_movement.direction.y = 1.0;
+        } else if (keyboard_input.just_released(KeyCode::KeyW)
+            || keyboard_input.just_released(KeyCode::ArrowUp))
+            && sprite_movement.direction.y > 0.0
+        {
+            sprite_movement.direction.y = 0.0;
+        }
+    
+        if keyboard_input.just_pressed(KeyCode::KeyS) || keyboard_input.just_pressed(KeyCode::ArrowDown) {
+            sprite_movement.direction.y = -1.0;
+        } else if (keyboard_input.just_released(KeyCode::KeyS)
+            || keyboard_input.just_released(KeyCode::ArrowDown))
+            && sprite_movement.direction.y < 0.0
+        {
+            sprite_movement.direction.y = 0.0;
+        }
     }
-
-    if keyboard_input.just_pressed(KeyCode::KeyD) || keyboard_input.just_pressed(KeyCode::ArrowRight) {
-        sprite_movement.direction.x = 1.0;
-    } else if (keyboard_input.just_released(KeyCode::KeyD)
-        || keyboard_input.just_released(KeyCode::ArrowRight))
-        && sprite_movement.direction.x > 0.0
-    {
-        sprite_movement.direction.x = 0.0;
-    }
-
-    if keyboard_input.just_pressed(KeyCode::KeyW) || keyboard_input.just_pressed(KeyCode::ArrowUp) {
-        sprite_movement.direction.y = 1.0;
-    } else if (keyboard_input.just_released(KeyCode::KeyW)
-        || keyboard_input.just_released(KeyCode::ArrowUp))
-        && sprite_movement.direction.y > 0.0
-    {
-        sprite_movement.direction.y = 0.0;
-    }
-
-    if keyboard_input.just_pressed(KeyCode::KeyS) || keyboard_input.just_pressed(KeyCode::ArrowDown) {
-        sprite_movement.direction.y = -1.0;
-    } else if (keyboard_input.just_released(KeyCode::KeyS)
-        || keyboard_input.just_released(KeyCode::ArrowDown))
-        && sprite_movement.direction.y < 0.0
-    {
-        sprite_movement.direction.y = 0.0;
-    }
-
 }
 
 fn bullet_firing(
@@ -140,30 +140,31 @@ fn bullet_firing(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     asset_server: Res<AssetServer>,
 ) {
-    let (translation, mut timer) = player.single_mut();
-    timer.tick(time.delta());
-    let position = translation.translation + Vec3::new(0.0, 30.0, 0.0);
+    if let Ok((translation, mut timer)) = player.get_single_mut() {
+        timer.tick(time.delta());
+        let position = translation.translation + Vec3::new(0.0, 30.0, 0.0);
 
-    if keyboard_input.pressed(KeyCode::Space) && timer.finished() {
-        cmd.spawn((
-            Bullet,
-            SpriteBundle {
-                texture: asset_server.load("bullet.png"),
-                transform: Transform::from_translation(position),
-                ..default()
-            },
-            SpriteMovement {
-                direction: Vec3::Y,
-                speed: 200.0,
-            },
-            BallCollider(2.0),
-        ));
-        let sound_effect = asset_server.load("audio/laserSmall_000.ogg");
-        cmd.spawn(AudioBundle {
-            source: sound_effect,
-            settings: PlaybackSettings::DESPAWN,
-        });
-        timer.reset();
+        if keyboard_input.pressed(KeyCode::Space) && timer.finished() {
+            cmd.spawn((
+                Bullet,
+                SpriteBundle {
+                    texture: asset_server.load("bullet.png"),
+                    transform: Transform::from_translation(position),
+                    ..default()
+                },
+                SpriteMovement {
+                    direction: Vec3::Y,
+                    speed: 200.0,
+                },
+                BallCollider(2.0),
+            ));
+            let sound_effect = asset_server.load("audio/laserSmall_000.ogg");
+            cmd.spawn(AudioBundle {
+                source: sound_effect,
+                settings: PlaybackSettings::DESPAWN,
+            });
+            timer.reset();
+        }
     }
 }
 
@@ -232,21 +233,22 @@ fn player_hit(
     asteroids: Query<(Entity, &Transform, &BallCollider), With<Asteroid>>,
     asset_server: Res<AssetServer>,
 ) {
-    let (player_entity, player_transform, player_collider) = player.single_mut();
-    for (asteroid_entity, asteroid_transform, asteroid_collider) in &mut asteroids.iter(){
-        if asteroid_transform
-            .translation
-            .distance(player_transform.translation)
-            < asteroid_collider.0 + player_collider.0
-        {
-            let sound_effect = asset_server.load("audio/explosionCrunch_004.ogg");
-            commands.spawn(AudioBundle {
-                source: sound_effect,
-                settings: PlaybackSettings::DESPAWN,
-            });
-            commands.entity(asteroid_entity).despawn();
-            //causes panic, trying to fix
-            commands.entity(player_entity).despawn();
+    if let Ok((player_entity, player_transform, player_collider)) = player.get_single_mut() {
+        for (asteroid_entity, asteroid_transform, asteroid_collider) in &mut asteroids.iter() {
+            if asteroid_transform
+                .translation
+                .distance(player_transform.translation)
+                < asteroid_collider.0 + player_collider.0
+            {
+                let sound_effect = asset_server.load("audio/explosionCrunch_004.ogg");
+                commands.spawn(AudioBundle {
+                    source: sound_effect,
+                    settings: PlaybackSettings::DESPAWN,
+                });
+                commands.entity(asteroid_entity).despawn();
+                //causes panic, trying to fix
+                commands.entity(player_entity).despawn();
+            }
         }
     }
 }
@@ -271,27 +273,28 @@ fn confine_player_movement (
     mut player: Query<&mut Transform, With<Player>>,
     window: Query<&Window>,
 ){
-    let mut transform = player.single_mut();
-    let mut translation = transform.translation;
-    let window = window.single();
+    if let Ok(mut transform) = player.get_single_mut() {
+        let mut translation = transform.translation;
+        let window = window.single();
 
-    let player_radius = 24.0;
-    let x_min = -window.width()/ 2.0 + player_radius;
-    let x_max = window.width()/2.0 - player_radius;
-    let y_min = -window.height()/2.0 + player_radius;
-    let y_max = window.height()/2.0 - player_radius;
+        let player_radius = 24.0;
+        let x_min = -window.width() / 2.0 + player_radius;
+        let x_max = window.width() / 2.0 - player_radius;
+        let y_min = -window.height() / 2.0 + player_radius;
+        let y_max = window.height() / 2.0 - player_radius;
 
-    //clamp the X position
-    if translation.x < x_min {
-        translation.x = x_min;
-    } else if translation.x > x_max{
-        translation.x = x_max;
+        //clamp the X position
+        if translation.x < x_min {
+            translation.x = x_min;
+        } else if translation.x > x_max {
+            translation.x = x_max;
+        }
+        //clamp the y position
+        if translation.y < y_min {
+            translation.y = y_min;
+        } else if translation.y > y_max {
+            translation.y = y_max;
+        }
+        transform.translation = translation;
     }
-    //clamp the y position
-    if translation.y < y_min {
-        translation.y = y_min;
-    } else if translation . y > y_max {
-        translation.y = y_max;
-    }
-    transform.translation = translation;
 }
