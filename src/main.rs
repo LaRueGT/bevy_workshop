@@ -11,6 +11,7 @@ fn main() {
             1.0,
             TimerMode::Once,
         )))
+        .init_resource::<Score>()
         .add_systems(Startup, setup)
         .add_systems(
             Update,
@@ -23,10 +24,12 @@ fn main() {
                 despawn_entities_outside_of_screen,
                 confine_player_movement,
                 player_hit,
-            )
+                update_score,
+            ),
         )
         .run();
 }
+
 ////////////////
 //components
 //
@@ -48,13 +51,33 @@ struct Bullet;
 struct CooldownTimer(Timer);
 
 #[derive(Component)]
+struct BallCollider(f32);
+
+#[derive(Component)]
 struct Asteroid;
 
 #[derive(Resource, Deref, DerefMut)]
 struct AsteroidSpawnTimer(Timer);
 
+#[derive(Resource, Deref, DerefMut)]
+struct AsteroidSpawnCount(i32);
+
+#[derive(Resource)]
+struct Score {
+    value: u32,
+}
+
+impl Default for Score {
+    fn default() -> Score {
+        Score { value: 0 }
+    }
+}
+
+#[derive(Resource, Deref, DerefMut)]
+struct AsteroidSpawnLimit(i32);
+
 #[derive(Component)]
-struct BallCollider(f32);
+struct Collectible;
 
 //////////////////////
 //systems
@@ -64,10 +87,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     //spawn Camera
     commands.spawn(Camera2dBundle::default());
     // Spawn the spaceship
-    commands.spawn(  (
+    commands.spawn((
         Player,
         SpriteBundle {
-            texture: asset_server.load("spaceship.png"),
+            texture: asset_server.load("sprites/spaceship.png"),
             transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
                 .with_scale(Vec3::splat(2.)),
             ..default()
@@ -91,10 +114,9 @@ fn sprite_movement(time: Res<Time>, mut sprite_position: Query<(&SpriteMovement,
 fn ship_movement_input(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut player: Query<&mut SpriteMovement, With<Player>>,
-    )
+)
 {
-    if let Ok(mut sprite_movement) = player.get_single_mut(){
-
+    if let Ok(mut sprite_movement) = player.get_single_mut() {
         if keyboard_input.just_pressed(KeyCode::KeyA) || keyboard_input.just_pressed(KeyCode::ArrowLeft) {
             sprite_movement.direction.x = -1.0;
         } else if (keyboard_input.just_released(KeyCode::KeyA)
@@ -103,7 +125,7 @@ fn ship_movement_input(
         {
             sprite_movement.direction.x = 0.0;
         }
-    
+
         if keyboard_input.just_pressed(KeyCode::KeyD) || keyboard_input.just_pressed(KeyCode::ArrowRight) {
             sprite_movement.direction.x = 1.0;
         } else if (keyboard_input.just_released(KeyCode::KeyD)
@@ -112,7 +134,7 @@ fn ship_movement_input(
         {
             sprite_movement.direction.x = 0.0;
         }
-    
+
         if keyboard_input.just_pressed(KeyCode::KeyW) || keyboard_input.just_pressed(KeyCode::ArrowUp) {
             sprite_movement.direction.y = 1.0;
         } else if (keyboard_input.just_released(KeyCode::KeyW)
@@ -121,7 +143,7 @@ fn ship_movement_input(
         {
             sprite_movement.direction.y = 0.0;
         }
-    
+
         if keyboard_input.just_pressed(KeyCode::KeyS) || keyboard_input.just_pressed(KeyCode::ArrowDown) {
             sprite_movement.direction.y = -1.0;
         } else if (keyboard_input.just_released(KeyCode::KeyS)
@@ -148,7 +170,7 @@ fn bullet_firing(
             cmd.spawn((
                 Bullet,
                 SpriteBundle {
-                    texture: asset_server.load("bullet.png"),
+                    texture: asset_server.load("sprites/bullet.png"),
                     transform: Transform::from_translation(position),
                     ..default()
                 },
@@ -188,7 +210,7 @@ fn spawn_asteroids(
         cmd.spawn((
             Asteroid,
             SpriteBundle {
-                texture: asset_server.load("asteroid.png"),
+                texture: asset_server.load("sprites/asteroid.png"),
                 transform: Transform::from_translation(Vec3::new(
                     rng.gen_range(-half_width..half_width),
                     half_height + 100.0, // Add buffer so that objects don't appear on screen from thin air
@@ -208,10 +230,20 @@ fn spawn_asteroids(
     }
 }
 
+//WIP
+fn spawn_collectibles(
+    mut cmd: Commands,
+    window: Query<&Window>,
+    asset_server: Res<AssetServer>,
+) {
+    let win = window.get_single().unwrap();
+}
+
 fn asteroid_bullet_collision(
     mut commands: Commands,
     bullets: Query<(Entity, &Transform, &BallCollider), With<Bullet>>,
     asteroids: Query<(Entity, &Transform, &BallCollider), With<Asteroid>>,
+    mut score: ResMut<Score>,
 ) {
     for (bullet_entity, bullet_transform, bullet_collider) in &mut bullets.iter() {
         for (asteroid_entity, asteroid_transform, asteroid_collider) in &mut asteroids.iter() {
@@ -222,8 +254,17 @@ fn asteroid_bullet_collision(
             {
                 commands.entity(bullet_entity).despawn();
                 commands.entity(asteroid_entity).despawn();
+                score.value += 1;
             }
         }
+    }
+}
+
+fn update_score(
+    score: Res<Score>,
+) {
+    if score.is_changed() {
+        println!("Score: {}", score.value.to_string());
     }
 }
 
@@ -269,10 +310,10 @@ fn despawn_entities_outside_of_screen(
     }
 }
 
-fn confine_player_movement (
+fn confine_player_movement(
     mut player: Query<&mut Transform, With<Player>>,
     window: Query<&Window>,
-){
+) {
     if let Ok(mut transform) = player.get_single_mut() {
         let mut translation = transform.translation;
         let window = window.single();
