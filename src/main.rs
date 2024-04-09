@@ -12,6 +12,8 @@ fn main() {
             TimerMode::Once,
         )))
         .init_resource::<Score>()
+        .init_resource::<AsteroidSpawnCount>()
+        .init_resource::<AsteroidSpawnLimit>()
         .add_systems(Startup, setup)
         .add_systems(
             Update,
@@ -59,8 +61,27 @@ struct Asteroid;
 #[derive(Resource, Deref, DerefMut)]
 struct AsteroidSpawnTimer(Timer);
 
-#[derive(Resource, Deref, DerefMut)]
-struct AsteroidSpawnCount(i32);
+#[derive(Resource)]
+struct AsteroidSpawnCount {
+    value: u32,
+}
+
+impl Default for AsteroidSpawnCount {
+    fn default() -> AsteroidSpawnCount {
+        AsteroidSpawnCount { value: 0 }
+    }
+}
+
+#[derive(Resource)]
+struct AsteroidSpawnLimit {
+    value: u32,
+}
+
+impl Default for AsteroidSpawnLimit {
+    fn default() -> AsteroidSpawnLimit {
+        AsteroidSpawnLimit { value: 10 }
+    }
+}
 
 #[derive(Resource)]
 struct Score {
@@ -72,9 +93,6 @@ impl Default for Score {
         Score { value: 0 }
     }
 }
-
-#[derive(Resource, Deref, DerefMut)]
-struct AsteroidSpawnLimit(i32);
 
 #[derive(Component)]
 struct Collectible;
@@ -196,10 +214,12 @@ fn spawn_asteroids(
     time: Res<Time>,
     mut timer: ResMut<AsteroidSpawnTimer>,
     asset_server: Res<AssetServer>,
+    limit: Res<AsteroidSpawnLimit>,
+    mut count: ResMut<AsteroidSpawnCount>,
 ) {
     timer.tick(time.delta());
 
-    if timer.finished() {
+    if timer.finished() && count.value < limit.value {
         let mut rng = rand::thread_rng();
 
         let window = window.single();
@@ -225,6 +245,7 @@ fn spawn_asteroids(
             },
             BallCollider(24.0),
         ));
+        count.value += 1;
         timer.set_duration(Duration::from_millis(rng.gen_range(500..3000)));
         timer.reset();
     }
@@ -244,6 +265,7 @@ fn asteroid_bullet_collision(
     bullets: Query<(Entity, &Transform, &BallCollider), With<Bullet>>,
     asteroids: Query<(Entity, &Transform, &BallCollider), With<Asteroid>>,
     mut score: ResMut<Score>,
+    mut count: ResMut<AsteroidSpawnCount>,
 ) {
     for (bullet_entity, bullet_transform, bullet_collider) in &mut bullets.iter() {
         for (asteroid_entity, asteroid_transform, asteroid_collider) in &mut asteroids.iter() {
@@ -255,6 +277,7 @@ fn asteroid_bullet_collision(
                 commands.entity(bullet_entity).despawn();
                 commands.entity(asteroid_entity).despawn();
                 score.value += 1;
+                count.value -= 1;
             }
         }
     }
@@ -273,6 +296,7 @@ fn player_hit(
     mut player: Query<(Entity, &Transform, &BallCollider), With<Player>>,
     asteroids: Query<(Entity, &Transform, &BallCollider), With<Asteroid>>,
     asset_server: Res<AssetServer>,
+    mut count: ResMut<AsteroidSpawnCount>,
 ) {
     if let Ok((player_entity, player_transform, player_collider)) = player.get_single_mut() {
         for (asteroid_entity, asteroid_transform, asteroid_collider) in &mut asteroids.iter() {
@@ -287,6 +311,7 @@ fn player_hit(
                     settings: PlaybackSettings::DESPAWN,
                 });
                 commands.entity(asteroid_entity).despawn();
+                count.value -= 1;
                 //causes panic, trying to fix
                 commands.entity(player_entity).despawn();
             }
@@ -297,14 +322,17 @@ fn player_hit(
 fn despawn_entities_outside_of_screen(
     mut cmd: Commands,
     window: Query<&Window>,
-    query: Query<(Entity, &Transform), Or<(With<Asteroid>, With<Bullet>)>>,
+    query: Query<(Entity, &Transform, Has<Asteroid>), Or<(With<Asteroid>, With<Bullet>)>>,
+    mut count: ResMut<AsteroidSpawnCount>,
 ) {
     let window = window.single();
-    // Add buffer so that objects aren't despawned until they are completely off the screen
     let half_height = window.resolution.height() / 2.0 + 100.0;
 
-    for (entity, transform) in &mut query.iter() {
+    for (entity, transform, is_asteroid) in &mut query.iter() {
         if transform.translation.y < -half_height || transform.translation.y > half_height {
+            if is_asteroid {
+                count.value -= 1;
+            }
             cmd.entity(entity).despawn();
         }
     }
