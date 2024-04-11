@@ -21,6 +21,7 @@ fn main() {
         )))
         .init_resource::<CollectibleSpawnCount>()
         .init_resource::<CollectibleSpawnLimit>()
+        .add_event::<GameOver>()
         .add_systems(Startup, setup)
         .add_systems(
             Update,
@@ -37,6 +38,7 @@ fn main() {
                 player_collect,
                 update_score,
                 exit_game,
+                handle_game_over,
             ),
         )
         .run();
@@ -115,6 +117,15 @@ impl Default for crate::CollectibleSpawnLimit {
     fn default() -> crate::CollectibleSpawnLimit {
         crate::CollectibleSpawnLimit { value: 5 }
     }
+}
+
+//////////////////////
+//events
+//
+//////////////////////
+#[derive(Event)]
+struct GameOver {
+    score: u32,
 }
 
 //////////////////////
@@ -347,6 +358,8 @@ fn player_hit(
     asteroids: Query<(Entity, &Transform, &BallCollider), With<Asteroid>>,
     asset_server: Res<AssetServer>,
     mut count: ResMut<AsteroidSpawnCount>,
+    mut game_over_eventwriter: EventWriter<GameOver>,
+    score: Res<Score>,
 ) {
     if let Ok((player_entity, player_transform, player_collider)) = player.get_single_mut() {
         for (asteroid_entity, asteroid_transform, asteroid_collider) in &mut asteroids.iter() {
@@ -363,6 +376,7 @@ fn player_hit(
                 commands.entity(asteroid_entity).despawn();
                 count.value -= 1;
                 commands.entity(player_entity).despawn();
+                game_over_eventwriter.send(GameOver { score: score.value });
             }
         }
     }
@@ -452,5 +466,13 @@ fn exit_game(
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
         app_exit_eventwriter.send(AppExit);
+    }
+}
+
+fn handle_game_over(
+    mut game_over_eventreader: EventReader<GameOver>
+) {
+    for event in game_over_eventreader.read() {
+        println!("Your final score is: {}", event.score.to_string());
     }
 }
