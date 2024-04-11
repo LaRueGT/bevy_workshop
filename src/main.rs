@@ -113,9 +113,9 @@ struct CollectibleSpawnLimit {
     value: u32,
 }
 
-impl Default for crate::CollectibleSpawnLimit {
-    fn default() -> crate::CollectibleSpawnLimit {
-        crate::CollectibleSpawnLimit { value: 5 }
+impl Default for CollectibleSpawnLimit {
+    fn default() -> CollectibleSpawnLimit {
+        CollectibleSpawnLimit { value: 5 }
     }
 }
 
