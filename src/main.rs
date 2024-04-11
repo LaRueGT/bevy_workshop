@@ -14,6 +14,12 @@ fn main() {
         .init_resource::<Score>()
         .init_resource::<AsteroidSpawnCount>()
         .init_resource::<AsteroidSpawnLimit>()
+        .insert_resource(CollectibleSpawnTimer(Timer::from_seconds(
+            5.0,
+            TimerMode::Once,
+        )))
+        .init_resource::<CollectibleSpawnCount>()
+        .init_resource::<CollectibleSpawnLimit>()
         .add_systems(Startup, setup)
         .add_systems(
             Update,
@@ -22,6 +28,7 @@ fn main() {
                 ship_movement_input,
                 bullet_firing,
                 spawn_asteroids,
+                spawn_collectibles,
                 asteroid_bullet_collision,
                 despawn_entities_outside_of_screen,
                 confine_player_movement,
@@ -61,15 +68,10 @@ struct Asteroid;
 #[derive(Resource, Deref, DerefMut)]
 struct AsteroidSpawnTimer(Timer);
 
+#[derive(Default)]
 #[derive(Resource)]
 struct AsteroidSpawnCount {
     value: u32,
-}
-
-impl Default for AsteroidSpawnCount {
-    fn default() -> AsteroidSpawnCount {
-        AsteroidSpawnCount { value: 0 }
-    }
 }
 
 #[derive(Resource)]
@@ -83,19 +85,34 @@ impl Default for AsteroidSpawnLimit {
     }
 }
 
+#[derive(Default)]
 #[derive(Resource)]
 struct Score {
     value: u32,
 }
 
-impl Default for Score {
-    fn default() -> Score {
-        Score { value: 0 }
-    }
-}
-
 #[derive(Component)]
 struct Collectible;
+
+#[derive(Resource, Deref, DerefMut)]
+struct CollectibleSpawnTimer(Timer);
+
+#[derive(Default)]
+#[derive(Resource)]
+struct CollectibleSpawnCount {
+    value: u32,
+}
+
+#[derive(Resource)]
+struct CollectibleSpawnLimit {
+    value: u32,
+}
+
+impl Default for crate::CollectibleSpawnLimit {
+    fn default() -> crate::CollectibleSpawnLimit {
+        crate::CollectibleSpawnLimit { value: 5 }
+    }
+}
 
 //////////////////////
 //systems
@@ -174,7 +191,7 @@ fn ship_movement_input(
 }
 
 fn bullet_firing(
-    mut cmd: Commands,
+    mut commands: Commands,
     mut player: Query<(&Transform, &mut CooldownTimer), With<Player>>,
     time: Res<Time>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
@@ -185,7 +202,7 @@ fn bullet_firing(
         let position = translation.translation + Vec3::new(0.0, 30.0, 0.0);
 
         if keyboard_input.pressed(KeyCode::Space) && timer.finished() {
-            cmd.spawn((
+            commands.spawn((
                 Bullet,
                 SpriteBundle {
                     texture: asset_server.load("sprites/bullet.png"),
@@ -199,7 +216,7 @@ fn bullet_firing(
                 BallCollider(2.0),
             ));
             let sound_effect = asset_server.load("audio/laserSmall_000.ogg");
-            cmd.spawn(AudioBundle {
+            commands.spawn(AudioBundle {
                 source: sound_effect,
                 settings: PlaybackSettings::DESPAWN,
             });
@@ -209,7 +226,7 @@ fn bullet_firing(
 }
 
 fn spawn_asteroids(
-    mut cmd: Commands,
+    mut commands: Commands,
     window: Query<&Window>,
     time: Res<Time>,
     mut timer: ResMut<AsteroidSpawnTimer>,
@@ -227,7 +244,7 @@ fn spawn_asteroids(
         let half_height = window.resolution.height() / 2.0;
 
         // Spawn an asteroid
-        cmd.spawn((
+        commands.spawn((
             Asteroid,
             SpriteBundle {
                 texture: asset_server.load("sprites/asteroid.png"),
@@ -253,11 +270,40 @@ fn spawn_asteroids(
 
 //WIP
 fn spawn_collectibles(
-    mut cmd: Commands,
+    mut commands: Commands,
     window: Query<&Window>,
     asset_server: Res<AssetServer>,
+    time: Res<Time>,
+    mut timer: ResMut<CollectibleSpawnTimer>,
+    limit: Res<CollectibleSpawnLimit>,
+    mut count: ResMut<CollectibleSpawnCount>,
 ) {
     let win = window.get_single().unwrap();
+    let mut rng = rand::thread_rng();
+    let half_width = win.resolution.width() / 2.0;
+    let half_height = win.resolution.height() / 2.0;
+
+    timer.tick(time.delta());
+
+    if timer.finished() && count.value < limit.value {
+        let random_x = rng.gen_range(-half_width..half_width);
+        let random_y = rng.gen_range(-half_height..half_height);
+        //spawn a collectible
+        commands.spawn((
+            Collectible,
+            SpriteBundle {
+                texture: asset_server.load("sprites/star.png"),
+                transform: Transform::from_translation(Vec3::new(
+                    random_x, random_y, 0.0))
+                    .with_scale(Vec3::splat(2.0)),
+                ..default()
+            },
+            BallCollider(10.0),
+        ));
+        count.value += 1;
+        timer.set_duration(Duration::from_millis(rng.gen_range(500..3000)));
+        timer.reset();
+    }
 }
 
 fn asteroid_bullet_collision(
@@ -320,7 +366,7 @@ fn player_hit(
 }
 
 fn despawn_entities_outside_of_screen(
-    mut cmd: Commands,
+    mut commands: Commands,
     window: Query<&Window>,
     query: Query<(Entity, &Transform, Has<Asteroid>), Or<(With<Asteroid>, With<Bullet>)>>,
     mut count: ResMut<AsteroidSpawnCount>,
@@ -333,7 +379,7 @@ fn despawn_entities_outside_of_screen(
             if is_asteroid {
                 count.value -= 1;
             }
-            cmd.entity(entity).despawn();
+            commands.entity(entity).despawn();
         }
     }
 }
