@@ -33,6 +33,7 @@ fn main() {
                 despawn_entities_outside_of_screen,
                 confine_player_movement,
                 player_hit,
+                player_collect,
                 update_score,
             ),
         )
@@ -139,7 +140,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 }
 
-fn sprite_movement(time: Res<Time>, mut sprite_position: Query<(&SpriteMovement, &mut Transform)>) {
+fn sprite_movement(
+    time: Res<Time>,
+    mut sprite_position: Query<(&SpriteMovement, &mut Transform)>,
+) {
     for (movement, mut transform) in &mut sprite_position {
         transform.translation +=
             movement.direction.normalize_or_zero() * movement.speed * time.delta_seconds();
@@ -149,8 +153,7 @@ fn sprite_movement(time: Res<Time>, mut sprite_position: Query<(&SpriteMovement,
 fn ship_movement_input(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut player: Query<&mut SpriteMovement, With<Player>>,
-)
-{
+) {
     if let Ok(mut sprite_movement) = player.get_single_mut() {
         if keyboard_input.just_pressed(KeyCode::KeyA) || keyboard_input.just_pressed(KeyCode::ArrowLeft) {
             sprite_movement.direction.x = -1.0;
@@ -268,7 +271,6 @@ fn spawn_asteroids(
     }
 }
 
-//WIP
 fn spawn_collectibles(
     mut commands: Commands,
     window: Query<&Window>,
@@ -358,12 +360,40 @@ fn player_hit(
                 });
                 commands.entity(asteroid_entity).despawn();
                 count.value -= 1;
-                //causes panic, trying to fix
                 commands.entity(player_entity).despawn();
             }
         }
     }
 }
+
+fn player_collect(
+    mut commands: Commands,
+    mut player: Query<(Entity, &Transform, &BallCollider), With<Player>>,
+    collectibles: Query<(Entity, &Transform, &BallCollider), With<Collectible>>,
+    asset_server: Res<AssetServer>,
+    mut count: ResMut<CollectibleSpawnCount>,
+    mut score: ResMut<Score>,
+) {
+    if let Ok((_player_entity, player_transform, player_collider)) = player.get_single_mut() {
+        for (collectible_entity, collectible_transform, collectible_collider) in &mut collectibles.iter() {
+            if collectible_transform
+                .translation
+                .distance(player_transform.translation)
+                < collectible_collider.0 + player_collider.0
+            {
+                let sound_effect = asset_server.load("audio/laserLarge_000.ogg");
+                commands.spawn(AudioBundle {
+                    source: sound_effect,
+                    settings: PlaybackSettings::DESPAWN,
+                });
+                commands.entity(collectible_entity).despawn();
+                count.value -= 1;
+                score.value += 1;
+            }
+        }
+    }
+}
+
 
 fn despawn_entities_outside_of_screen(
     mut commands: Commands,
