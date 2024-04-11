@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::utils::Duration;
+use bevy::app::AppExit;
 use rand::Rng;
 
 fn main() {
@@ -35,6 +36,7 @@ fn main() {
                 player_hit,
                 player_collect,
                 update_score,
+                exit_game,
             ),
         )
         .run();
@@ -441,5 +443,14 @@ fn confine_player_movement(
             translation.y = y_max;
         }
         transform.translation = translation;
+    }
+}
+
+fn exit_game(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut app_exit_eventwriter: EventWriter<AppExit>,
+) {
+    if keyboard_input.just_pressed(KeyCode::Escape) {
+        app_exit_eventwriter.send(AppExit);
     }
 }
