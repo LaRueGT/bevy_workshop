@@ -1,12 +1,12 @@
 use bevy::prelude::{Deref, DerefMut, Resource, Timer};
 
 #[derive(Resource, Deref, DerefMut)]
-pub struct CollectibleSpawnTimer(Timer);
+pub struct CollectibleSpawnTimer(pub Timer);
 
 #[derive(Default)]
 #[derive(Resource)]
 pub struct CollectibleSpawnCount {
-    value: u32,
+    pub value: u32,
 }
 
 #[derive(Resource)]

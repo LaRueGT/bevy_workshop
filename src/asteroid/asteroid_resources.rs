@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 
 #[derive(Resource, Deref, DerefMut)]
-pub struct AsteroidSpawnTimer(Timer);
+pub struct AsteroidSpawnTimer(pub Timer);
 
 #[derive(Default)]
 #[derive(Resource)]
 pub struct AsteroidSpawnCount {
-    value: u32,
+    pub value: u32,
 }
 
 #[derive(Resource)]

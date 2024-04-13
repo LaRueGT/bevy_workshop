@@ -1,12 +1,17 @@
+//std
+use rand::Rng;
+//extern
 use bevy::prelude::*;
 use bevy::utils::Duration;
-use rand::Rng;
-
+//children
 use crate::asteroid::asteroid_components::*;
 use crate::asteroid::asteroid_resources::*;
+//parents
 use crate::{BallCollider, SpriteMovement};
+use crate::player::player_components::*;
+use crate::score::score_resources::*;
 
-fn spawn_asteroids(
+pub fn spawn_asteroids(
     mut commands: Commands,
     window: Query<&Window>,
     time: Res<Time>,
@@ -49,7 +54,7 @@ fn spawn_asteroids(
     }
 }
 
-fn asteroid_bullet_collision(
+pub fn asteroid_bullet_collision(
     mut commands: Commands,
     bullets: Query<(Entity, &Transform, &BallCollider), With<Bullet>>,
     asteroids: Query<(Entity, &Transform, &BallCollider), With<Asteroid>>,
@@ -72,7 +77,7 @@ fn asteroid_bullet_collision(
     }
 }
 
-fn despawn_entities_outside_of_screen(
+pub fn despawn_asteroids_outside_of_screen(
     mut commands: Commands,
     window: Query<&Window>,
     query: Query<(Entity, &Transform, Has<Asteroid>), Or<(With<Asteroid>, With<Bullet>)>>,

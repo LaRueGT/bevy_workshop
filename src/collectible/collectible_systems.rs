@@ -1,12 +1,15 @@
+//std
+use rand::Rng;
+//extern
 use bevy::prelude::*;
 use bevy::utils::Duration;
-use rand::Rng;
-
+//children
 use crate::collectible::collectible_components::*;
 use crate::collectible::collectible_resources::*;
-use crate::{BallCollider, SpriteMovement};
+//parents
+use crate::BallCollider;
 
-fn spawn_collectibles(
+pub fn spawn_collectibles(
     mut commands: Commands,
     window: Query<&Window>,
     asset_server: Res<AssetServer>,

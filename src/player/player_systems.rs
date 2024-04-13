@@ -1,10 +1,18 @@
+//extern
 use bevy::prelude::*;
-
+//children
 use crate::player::player_components::*;
 use crate::player::player_resources::*;
 use crate::{BallCollider, SpriteMovement};
+//parents
+use crate::asteroid::asteroid_components::*;
+use crate::asteroid::asteroid_resources::*;
+use crate::collectible::collectible_components::*;
+use crate::collectible::collectible_resources::*;
+use crate::score::score_resources::*;
+use crate::events::*;
 
-fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Spawn the spaceship
     commands.spawn((
         Player,
@@ -23,7 +31,7 @@ fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 }
 
-fn ship_movement_input(
+pub fn ship_movement_input(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut player: Query<&mut SpriteMovement, With<Player>>,
 ) {
@@ -66,7 +74,7 @@ fn ship_movement_input(
     }
 }
 
-fn bullet_firing(
+pub fn bullet_firing(
     mut commands: Commands,
     mut player: Query<(&Transform, &mut CooldownTimer), With<Player>>,
     time: Res<Time>,
@@ -101,7 +109,7 @@ fn bullet_firing(
     }
 }
 
-fn player_hit(
+pub fn player_hit(
     mut commands: Commands,
     mut player: Query<(Entity, &Transform, &BallCollider), With<Player>>,
     asteroids: Query<(Entity, &Transform, &BallCollider), With<Asteroid>>,
@@ -131,7 +139,7 @@ fn player_hit(
     }
 }
 
-fn player_collect(
+pub fn player_collect(
     mut commands: Commands,
     mut player: Query<(Entity, &Transform, &BallCollider), With<Player>>,
     collectibles: Query<(Entity, &Transform, &BallCollider), With<Collectible>>,
@@ -159,7 +167,7 @@ fn player_collect(
     }
 }
 
-fn confine_player_movement(
+pub fn confine_player_movement(
     mut player: Query<&mut Transform, With<Player>>,
     window: Query<&Window>,
 ) {

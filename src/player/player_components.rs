@@ -7,4 +7,4 @@ pub struct Player;
 pub struct Bullet;
 
 #[derive(Component, Deref, DerefMut)]
-pub struct CooldownTimer(Timer);
+pub struct CooldownTimer(pub Timer);
