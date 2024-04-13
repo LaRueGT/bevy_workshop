@@ -26,10 +26,10 @@ fn main() {
             PlayerPlugin,
             ScorePlugin,
             CollectiblePlugin,))
-        .add_systems(
-            Startup, (
+        .add_systems(Startup, (
                 setup_camera,
-            ),)
+            ),
+        )
         .add_systems(
             Update,
             (
