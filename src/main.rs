@@ -21,10 +21,11 @@ fn main() {
             DefaultPlugins.set(ImagePlugin::default_nearest()))
         .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .add_event::<GameOver>()
-        .add_plugins(AsteroidPlugin {})
-        .add_plugins(PlayerPlugin)
-        .add_plugins(ScorePlugin)
-        .add_plugins(CollectiblePlugin {})
+        .add_plugins((
+            AsteroidPlugin,
+            PlayerPlugin,
+            ScorePlugin,
+            CollectiblePlugin,))
         .add_systems(
             Startup, (
                 setup_camera,

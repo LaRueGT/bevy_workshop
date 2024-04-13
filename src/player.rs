@@ -10,9 +10,9 @@ pub struct  PlayerPlugin;
 
 impl Plugin for PlayerPlugin{
     fn build(&self, app: &mut App){
-        app.add_systems(Startup, (
+        app.add_systems(Startup,
             spawn_player
-        ),);
+        );
         app.add_systems(Update, (
             ship_movement_input,
             bullet_firing,

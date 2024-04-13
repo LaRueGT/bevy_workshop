@@ -2,7 +2,6 @@
 use bevy::prelude::*;
 //children
 use crate::player::player_components::*;
-use crate::player::player_resources::*;
 use crate::{BallCollider, SpriteMovement};
 //parents
 use crate::asteroid::asteroid_components::*;

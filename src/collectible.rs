@@ -3,11 +3,10 @@ pub mod collectible_components;
 pub mod collectible_systems;
 pub mod collectible_resources;
 
-use collectible_components::*;
 use collectible_resources::*;
 use collectible_systems::*;
 
-pub struct CollectiblePlugin{}
+pub struct CollectiblePlugin;
 
 impl Plugin for CollectiblePlugin {
     fn build(&self, app: &mut App) {

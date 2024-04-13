@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 
-use crate::score::score_components::*;
 use crate::score::score_resources::*;
 
 pub fn update_score(

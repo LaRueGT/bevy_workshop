@@ -5,7 +5,6 @@ pub mod score_resources;
 use bevy::prelude::*;
 
 use crate::score::score_systems::*;
-use crate::score::score_components::*;
 use crate::score::score_resources::*;
 
 pub struct  ScorePlugin;

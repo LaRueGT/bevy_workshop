@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy::utils::Duration;
 
 pub mod asteroid_components;
 pub mod asteroid_systems;
@@ -8,7 +7,7 @@ pub mod asteroid_resources;
 use crate::asteroid::asteroid_resources::*;
 use crate::asteroid::asteroid_systems::*;
 
-pub struct AsteroidPlugin{}
+pub struct AsteroidPlugin;
 
 impl Plugin for AsteroidPlugin{
     fn build(&self, app: &mut App){
