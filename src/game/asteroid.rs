@@ -6,6 +6,8 @@ pub mod asteroid_resources;
 
 use crate::game::asteroid::asteroid_resources::*;
 use crate::game::asteroid::asteroid_systems::*;
+use crate::AppState;
+use crate::game::SimulationState;
 
 pub struct AsteroidPlugin;
 
@@ -20,6 +22,9 @@ impl Plugin for AsteroidPlugin {
             spawn_asteroids,
             asteroid_bullet_collision,
             despawn_asteroids_outside_of_screen,
-        ), );
+        )
+            .run_if(in_state(AppState::Game))
+            .run_if(in_state(SimulationState::Running)),
+        );
     }
 }

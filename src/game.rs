@@ -2,6 +2,7 @@ pub mod player;
 pub mod asteroid;
 pub mod collectible;
 pub mod score;
+mod game_systems;
 
 //children
 use crate::events::*;
@@ -9,7 +10,9 @@ use crate::game::asteroid::*;
 use crate::game::collectible::*;
 use crate::game::player::*;
 use crate::game::score::*;
-
+use crate::game::game_systems::*;
+//parents
+use crate::AppState;
 //extern
 use bevy::prelude::*;
 
@@ -17,7 +20,8 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<GameOver>()
+        app.init_state::<SimulationState>()
+            .add_event::<GameOver>()
             .add_plugins((
                 AsteroidPlugin,
                 PlayerPlugin,
@@ -26,7 +30,10 @@ impl Plugin for GamePlugin {
             .add_systems(
                 Update,
                 (
-                    sprite_movement,
+                    sprite_movement
+                        .run_if(in_state(AppState::Game))
+                        .run_if(in_state(SimulationState::Running)),
+                    toggle_simulation.run_if(in_state(AppState::Game)),
                 ));
     }
 }
@@ -50,3 +57,9 @@ pub fn sprite_movement(
     }
 }
 
+#[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
+pub enum SimulationState {
+    Running,
+    #[default]
+    Paused,
+}
