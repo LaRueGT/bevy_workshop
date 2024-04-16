@@ -4,14 +4,14 @@ pub mod player_components;
 pub mod player_systems;
 pub mod player_resources;
 
-use crate::player::player_systems::*;
+use crate::game::player::player_systems::*;
 
-pub struct  PlayerPlugin;
+pub struct PlayerPlugin;
 
-impl Plugin for PlayerPlugin{
-    fn build(&self, app: &mut App){
+impl Plugin for PlayerPlugin {
+    fn build(&self, app: &mut App) {
         app.add_systems(Startup,
-            spawn_player
+                        spawn_player,
         );
         app.add_systems(Update, (
             ship_movement_input,
@@ -19,6 +19,6 @@ impl Plugin for PlayerPlugin{
             confine_player_movement.after(ship_movement_input),
             player_hit,
             player_collect,
-        ),);
+        ), );
     }
 }

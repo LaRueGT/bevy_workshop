@@ -4,10 +4,10 @@ use rand::Rng;
 use bevy::prelude::*;
 use bevy::utils::Duration;
 //children
-use crate::collectible::collectible_components::*;
-use crate::collectible::collectible_resources::*;
+use crate::game::collectible::collectible_components::*;
+use crate::game::collectible::collectible_resources::*;
 //parents
-use crate::BallCollider;
+use crate::game::BallCollider;
 
 pub fn spawn_collectibles(
     mut commands: Commands,

@@ -4,12 +4,12 @@ use rand::Rng;
 use bevy::prelude::*;
 use bevy::utils::Duration;
 //children
-use crate::asteroid::asteroid_components::*;
-use crate::asteroid::asteroid_resources::*;
+use crate::game::asteroid::asteroid_components::*;
+use crate::game::asteroid::asteroid_resources::*;
 //parents
-use crate::{BallCollider, SpriteMovement};
-use crate::player::player_components::*;
-use crate::score::score_resources::*;
+use crate::game::{BallCollider, SpriteMovement};
+use crate::game::player::player_components::*;
+use crate::game::score::score_resources::*;
 
 pub fn spawn_asteroids(
     mut commands: Commands,

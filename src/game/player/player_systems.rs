@@ -1,14 +1,14 @@
 //extern
 use bevy::prelude::*;
 //children
-use crate::player::player_components::*;
-use crate::{BallCollider, SpriteMovement};
+use crate::game::player::player_components::*;
+use crate::game::{BallCollider, SpriteMovement};
 //parents
-use crate::asteroid::asteroid_components::*;
-use crate::asteroid::asteroid_resources::*;
-use crate::collectible::collectible_components::*;
-use crate::collectible::collectible_resources::*;
-use crate::score::score_resources::*;
+use crate::game::asteroid::asteroid_components::*;
+use crate::game::asteroid::asteroid_resources::*;
+use crate::game::collectible::collectible_components::*;
+use crate::game::collectible::collectible_resources::*;
+use crate::game::score::score_resources::*;
 use crate::events::*;
 
 pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::score::score_resources::*;
+use crate::game::score::score_resources::*;
 
 pub fn update_score(
     score: Res<Score>,
