@@ -11,6 +11,8 @@ use crate::game::{BallCollider, SpriteMovement};
 use crate::game::player::player_components::*;
 use crate::game::score::score_resources::*;
 
+//TODO - add 'burst spawner' to fill level on game/level start
+
 pub fn spawn_asteroids(
     mut commands: Commands,
     window: Query<&Window>,

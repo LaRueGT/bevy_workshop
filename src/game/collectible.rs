@@ -1,10 +1,13 @@
 use bevy::prelude::*;
+
 pub mod collectible_components;
 pub mod collectible_systems;
 pub mod collectible_resources;
 
 use collectible_resources::*;
 use collectible_systems::*;
+use crate::AppState;
+use crate::game::SimulationState;
 
 pub struct CollectiblePlugin;
 
@@ -16,6 +19,9 @@ impl Plugin for CollectiblePlugin {
         )));
         app.init_resource::<CollectibleSpawnCount>();
         app.init_resource::<CollectibleSpawnLimit>();
-        app.add_systems(Update, spawn_collectibles);
+        app.add_systems(Update, (
+            spawn_collectibles, )
+            .run_if(in_state(AppState::Game))
+            .run_if(in_state(SimulationState::Running)), );
     }
 }
