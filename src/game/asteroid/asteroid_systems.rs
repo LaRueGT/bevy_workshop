@@ -12,6 +12,7 @@ use crate::game::player::player_components::*;
 use crate::game::score::score_resources::*;
 
 //TODO - add 'burst spawner' to fill level on game/level start
+//despawn on gameover
 
 pub fn spawn_asteroids(
     mut commands: Commands,
@@ -96,5 +97,16 @@ pub fn despawn_asteroids_outside_of_screen(
             commands.entity(entity).despawn();
         }
     }
+}
+
+pub fn despawn_asteroids(
+    mut commands: Commands,
+    query: Query<Entity, With<Asteroid>>,
+    mut count: ResMut<AsteroidSpawnCount>,
+) {
+    for asteroid_entity in &mut query.iter() {
+        commands.entity(asteroid_entity).despawn();
+    }
+    count.value = 0;
 }
 

@@ -45,3 +45,14 @@ pub fn spawn_collectibles(
         timer.reset();
     }
 }
+
+pub fn despawn_collectibles(
+    mut commands: Commands,
+    query: Query<Entity, With<Collectible>>,
+    mut count: ResMut<CollectibleSpawnCount>,
+) {
+    for coll_entity in query.iter() {
+        commands.entity(coll_entity).despawn();
+    }
+    count.value = 0;
+}

@@ -9,3 +9,11 @@ pub fn update_score(
         println!("Score: {}", score.value.to_string());
     }
 }
+
+pub fn remove_score(mut commands: Commands) {
+    commands.remove_resource::<Score>();
+}
+
+pub fn insert_score(mut commands: Commands) {
+    commands.insert_resource(Score::default())
+}

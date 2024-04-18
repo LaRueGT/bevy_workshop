@@ -23,5 +23,8 @@ impl Plugin for CollectiblePlugin {
             spawn_collectibles, )
             .run_if(in_state(AppState::Game))
             .run_if(in_state(SimulationState::Running)), );
+        app.add_systems(OnExit(AppState::Game), (
+            despawn_collectibles,
+        ), );
     }
 }

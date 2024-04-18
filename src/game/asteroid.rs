@@ -26,5 +26,8 @@ impl Plugin for AsteroidPlugin {
             .run_if(in_state(AppState::Game))
             .run_if(in_state(SimulationState::Running)),
         );
+        app.add_systems(OnExit(AppState::Game), (
+            despawn_asteroids,
+        ), );
     }
 }

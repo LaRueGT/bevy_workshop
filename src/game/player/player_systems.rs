@@ -30,6 +30,21 @@ pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 }
 
+pub fn despawn_player(mut commands: Commands, player_query: Query<Entity, With<Player>>) {
+    if let Ok(player_entity) = player_query.get_single() {
+        commands.entity(player_entity).despawn();
+    }
+}
+
+pub fn despawn_bullets(
+    mut commands: Commands,
+    query: Query<Entity, With<Bullet>>,
+) {
+    for bullet_entity in &mut query.iter() {
+        commands.entity(bullet_entity).despawn();
+    }
+}
+
 pub fn ship_movement_input(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut player: Query<&mut SpriteMovement, With<Player>>,
