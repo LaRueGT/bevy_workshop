@@ -1,6 +1,6 @@
-use bevy::asset::meta::AssetAction;
 use bevy::prelude::*;
 
+pub const BACKGROUND_COLOR: Color = Color::rgb(0.5, 0.25, 0.25); 
 pub const NORMAL_BUTTON_COLOR: Color = Color::rgb(0.15, 0.15, 0.15);
 pub const HOVERED_BUTTON_COLOR: Color = Color::rgb(0.25, 0.25, 0.25);
 pub const PRESSED_BUTTON_COLOR: Color = Color::rgb(0.35, 0.35, 0.35);
@@ -38,6 +38,14 @@ pub fn get_title_text_style(asset_server: &Res<AssetServer>) -> TextStyle {
     style
 }
 
+pub fn get_final_score_text_style(asset_server: &Res<AssetServer>) -> TextStyle {
+    let mut style: TextStyle = TextStyle::default();
+    style.font = asset_server.load("fonts/FiraSans-Bold.ttf");
+    style.font_size = 48.0;
+    style.color = Color::rgb(1.0, 1.0, 1.0);
+    style
+}
+
 pub const TITLE_STYLE: Style = {
     let mut style = Style::DEFAULT;
     style.flex_direction = FlexDirection::Row;
@@ -57,5 +65,29 @@ pub const MAIN_MENU_STYLE: Style = {
     style.column_gap = Val::Px(8.0);
     style.width = Val::Percent(100.0);
     style.height = Val::Percent(100.0);
+    style
+};
+
+pub const GAME_OVER_MENU_STYLE: Style = {
+    let mut style = Style::DEFAULT;
+    style.position_type = PositionType::Absolute;
+    style.display = Display::Flex;
+    style.justify_content = JustifyContent::Center;
+    style.align_items = AlignItems::Center;
+    style.width = Val::Percent(100.0);
+    style.height = Val::Percent(100.0);
+    style
+};
+
+pub const GAME_OVER_MENU_CONTAINER_STYLE: Style = {
+    let mut style = Style::DEFAULT;
+    style.display = Display::Flex;
+    style.flex_direction = FlexDirection::Column;
+    style.justify_content = JustifyContent::Center;
+    style.align_items = AlignItems::Center;
+    style.width = Val::Px(400.0);
+    style.height = Val::Px(400.0);
+    style.row_gap = Val::Px(8.0);
+    style.column_gap = Val::Px(8.0);
     style
 };

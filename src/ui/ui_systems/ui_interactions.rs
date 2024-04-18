@@ -27,6 +27,52 @@ pub fn interact_with_play_button(
     }
 }
 
+pub fn interact_with_restart_button(
+    mut button_query: Query<
+        (&Interaction, &mut BackgroundColor),
+        (Changed<Interaction>, With<RestartButton>),
+    >,
+    mut app_state_next_state: ResMut<NextState<AppState>>,
+) {
+    for (interaction, mut color) in button_query.iter_mut() {
+        match *interaction {
+            Interaction::Pressed => {
+                *color = PRESSED_BUTTON_COLOR.into();
+                app_state_next_state.set(AppState::Game);
+            }
+            Interaction::Hovered => {
+                *color = HOVERED_BUTTON_COLOR.into();
+            }
+            Interaction::None => {
+                *color = NORMAL_BUTTON_COLOR.into();
+            }
+        }
+    }
+}
+
+pub fn interact_with_main_menu_button(
+    mut button_query: Query<
+        (&Interaction, &mut BackgroundColor),
+        (Changed<Interaction>, With<MainMenuButton>),
+    >,
+    mut app_state_next_state: ResMut<NextState<AppState>>,
+) {
+    for (interaction, mut color) in button_query.iter_mut() {
+        match *interaction {
+            Interaction::Pressed => {
+                *color = PRESSED_BUTTON_COLOR.into();
+                app_state_next_state.set(AppState::MainMenu);
+            }
+            Interaction::Hovered => {
+                *color = HOVERED_BUTTON_COLOR.into();
+            }
+            Interaction::None => {
+                *color = NORMAL_BUTTON_COLOR.into();
+            }
+        }
+    }
+}
+
 pub fn interact_with_quit_button(
     mut button_query: Query<
         (&Interaction, &mut BackgroundColor),

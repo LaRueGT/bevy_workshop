@@ -4,7 +4,6 @@ use bevy::app::AppExit;
 //internal
 use crate::events::*;
 use crate::AppState;
-use crate::game::SimulationState;
 
 pub fn exit_game(
     keyboard_input: Res<ButtonInput<KeyCode>>,
