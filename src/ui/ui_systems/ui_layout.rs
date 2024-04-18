@@ -22,17 +22,7 @@ pub fn build_main_menu(
 {
     let main_menu_entity = commands.spawn(
         (NodeBundle {
-            style: Style {
-                flex_direction: FlexDirection::Column,
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                row_gap: Val::Px(8.0),
-                column_gap: Val::Px(8.0),
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                ..default()
-            },
-            background_color: Color::RED.into(),
+            style: MAIN_MENU_STYLE,
             ..default()
         },
          MainMenu {},
@@ -41,25 +31,13 @@ pub fn build_main_menu(
             //title
             parent.spawn(
                 NodeBundle {
-                    style: Style {
-                        flex_direction: FlexDirection::Row,
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::Center,
-                        width: Val::Px(300.0),
-                        height: Val::Px(120.0),
-                        ..default()
-                    },
+                    style: TITLE_STYLE,
                     ..default()
                 }).with_children(|parent| {
                 //image1
                 parent.spawn(
                     ImageBundle {
-                        style: Style {
-                            width: Val::Px(64.0),
-                            height: Val::Px(64.0),
-                            margin: UiRect::new(Val::Px(8.0), Val::Px(8.0), Val::Px(8.0), Val::Px(8.0)),
-                            ..default()
-                        },
+                        style: IMAGE_STYLE,
                         image: asset_server.load("sprites/ball_blue_large.png").into(),
                         ..default()
                     });
@@ -68,11 +46,7 @@ pub fn build_main_menu(
                     text: Text {
                         sections: vec![TextSection::new(
                             "Space Busters!",
-                            TextStyle {
-                                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                                font_size: 64.0,
-                                color: Color::rgb(1.0, 1.0, 1.0),
-                            },
+                            get_title_text_style(&asset_server),
                         )],
                         justify: JustifyText::Center,
                         linebreak_behavior: BreakLineOn::NoWrap,
@@ -83,12 +57,7 @@ pub fn build_main_menu(
                 //image2
                 parent.spawn(
                     ImageBundle {
-                        style: Style {
-                            width: Val::Px(64.0),
-                            height: Val::Px(64.0),
-                            margin: UiRect::new(Val::Px(8.0), Val::Px(8.0), Val::Px(8.0), Val::Px(8.0)),
-                            ..default()
-                        },
+                        style: IMAGE_STYLE,
                         image: asset_server.load("sprites/ball_red_large.png").into(),
                         ..default()
                     });
@@ -107,11 +76,7 @@ pub fn build_main_menu(
                         text: Text {
                             sections: vec![TextSection::new(
                                 "Play",
-                                TextStyle {
-                                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                                    font_size: 32.0,
-                                    color: Color::rgb(1.0, 1.0, 1.0),
-                                },
+                                get_button_text_style(&asset_server),
                             )],
                             justify: JustifyText::Center,
                             linebreak_behavior: BreakLineOn::NoWrap,
@@ -134,11 +99,7 @@ pub fn build_main_menu(
                         text: Text {
                             sections: vec![TextSection::new(
                                 "Quit",
-                                TextStyle {
-                                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                                    font_size: 32.0,
-                                    color: Color::rgb(1.0, 1.0, 1.0),
-                                },
+                                get_button_text_style(&asset_server),
                             )],
                             justify: JustifyText::Center,
                             linebreak_behavior: BreakLineOn::NoWrap,
