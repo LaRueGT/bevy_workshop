@@ -8,7 +8,6 @@ use crate::AppState;
 use crate::game::score::score_systems::*;
 use crate::game::score::score_resources::*;
 use crate::game::SimulationState;
-use crate::systems::setup_camera;
 
 pub struct ScorePlugin;
 
