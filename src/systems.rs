@@ -4,6 +4,7 @@ use bevy::app::AppExit;
 //internal
 use crate::events::*;
 use crate::AppState;
+use crate::game::score::score_resources::FinalScore;
 
 pub fn exit_game(
     keyboard_input: Res<ButtonInput<KeyCode>>,
@@ -17,9 +18,11 @@ pub fn exit_game(
 pub fn handle_game_over(
     mut game_over_eventreader: EventReader<GameOver>,
     mut next_app_state: ResMut<NextState<AppState>>,
+    mut final_score: ResMut<FinalScore>,
 ) {
     for event in game_over_eventreader.read() {
         println!("Your final score is: {}", event.score.to_string());
+        final_score.value = event.score.clone();
         next_app_state.set(AppState::GameOver);
         println!("Entered AppState::GameOver");
     }

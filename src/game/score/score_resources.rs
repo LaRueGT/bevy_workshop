@@ -5,3 +5,9 @@ use bevy::prelude::*;
 pub struct Score {
     pub value: u32,
 }
+
+#[derive(Default)]
+#[derive(Resource)]
+pub struct FinalScore {
+    pub value: u32,
+}
