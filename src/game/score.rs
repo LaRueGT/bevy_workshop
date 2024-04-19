@@ -8,7 +8,7 @@ use crate::AppState;
 use crate::game::score::score_systems::*;
 use crate::game::score::score_resources::*;
 use crate::game::SimulationState;
-use crate::ui::ui_systems::ui_updates::*;
+use crate::systems::setup_camera;
 
 pub struct ScorePlugin;
 
@@ -16,9 +16,9 @@ impl Plugin for ScorePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Score>();
         app.init_resource::<FinalScore>();
-        app.add_systems(OnEnter(AppState::Game), (
-            insert_score,
-        ), );
+        app.add_systems(Startup, (
+            create_high_scores_table.pipe(db_error_handler),
+        ),);
         app.add_systems(Update, (
             update_score, )
             .run_if(in_state(AppState::Game))
